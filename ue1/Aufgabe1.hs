@@ -11,6 +11,7 @@ type Gluecksspiel       =   (Spiel, Spiel)
 anzahlWettKombis    ::  Gluecksspiel -> Nat0
 anzahlWettKombis inputSpiel = binom(fst(inputSpiel)) * binom(snd(inputSpiel))
 
+
 -- Helper 1.1
 
 -- Declare Binomial Coefficient Function
@@ -22,6 +23,8 @@ binom (a,b) = div (fac a) ((fac b) * (fac (a - b)))
 -- of a list for simplicity
 fac :: Nat0 -> Nat0
 fac n = product [1..n]
+
+
 
 -- Exercise 1.2
 
@@ -49,6 +52,9 @@ toNat :: Int -> Nat0
 toNat n = fromIntegral n
 
 
+
+-- Exercise 1.3
+
 -- Solution 1.3
 -- Mostly defined in 1.2
 -- Define a list which adds itself over and over again 
@@ -56,12 +62,16 @@ toNat n = fromIntegral n
 fibs :: Nat0 -> [Nat0]
 fibs n = take ((fromNat n) + 1) fib
 
+
 -- Helper 1.3
 
 -- Define cast from Nat0 to Int
 fromNat :: Nat0 -> Int
 fromNat n = fromIntegral n
 
+
+
+-- Exercise 1.4
 
 -- Solution 1.4
 -- use pattern matching to end recursion
