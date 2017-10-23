@@ -80,5 +80,5 @@ fromNat n = fromIntegral n
 -- use pattern matching to end recursion
 verflechten :: [Int] -> [Int] -> [Int]
 verflechten (n1:n1s) (n2:n2s) = n1 : n2 : (verflechten n1s n2s)
-verflechten (_) (n2s) = n2s
-verflechten (n1s) (_) = n1s
+verflechten [] (n2s) = n2s
+verflechten (n1s) [] = n1s
