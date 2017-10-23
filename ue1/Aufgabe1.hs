@@ -31,12 +31,15 @@ fac n = product [1..n]
 -- Solution 1.2
 -- Delete 1 because Fibonacci Sequence 
 -- in this program starts with 0
+-- If fib occurs two times, take lower index.
 fib' :: Nat0 -> Nat0
 fib' n 
-    | n == last fibT = toNat (length fibT) - 1
+    | n == last fibT = toNat (length fibT) - 1 - checkMultiples fibT
     | otherwise = n
-    where   fibT = [ x | x <- takeWhile (<=n) fib]
-          
+    where   fibT = [ x | x <- takeWhile (<= n) fib]
+            checkMultiples xs 
+                | last xs == last (init xs) = 1 + checkMultiples (init xs)
+                | otherwise = 0 
 
 -- Helper 1.2
 
