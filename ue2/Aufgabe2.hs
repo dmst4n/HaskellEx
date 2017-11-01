@@ -88,6 +88,9 @@ normalForm (n:ns)
     | n == 0 = normalForm ns
     | otherwise = n:ns 
 
+-- Define local recursive function to sum up the entries
+-- Local definitions for more readability
+-- Use Lists of same length (filled with zeroes)
 addiere :: Nat -> Nat -> Nat
 addiere as bs
     | not (istGueltig as) || not (istGueltig bs) = []
@@ -104,6 +107,8 @@ addiere as bs
                 | (a + b) > 9 = (a + b - 10) : sumUp (((head as) + 1) : tail as) bs
                 | otherwise = (a + b) : sumUp as bs  
 
+-- Define local recursive diff function 
+-- Use Lists of same length (filled with zeroes)
 subtrahiere :: Nat -> Nat -> Nat
 subtrahiere [] bs = []
 subtrahiere as [] = []
@@ -130,6 +135,7 @@ subtrahiere as bs
             | length bs == length as && head bs == head as = preCheck (tail as) (tail bs)
             | otherwise = False
 
+-- Helper 2.4
 fillZeros :: Nat -> Int -> Nat
 fillZeros as n
     | diffLength < 0 = as
