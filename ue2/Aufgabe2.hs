@@ -13,15 +13,16 @@ type AngeboteneSpiele   =   [Gluecksspiel]
 
 -- Solution 2.1
 -- First entry is the lowest
+-- lcm computs the largest common multiple
 p2p :: (Nat0, Nat0) -> (Nat0, Nat0)
 p2p (m,n) = (p,q)
     where p = (lcm m n) `div` m 
           q = (lcm m n) `div` n
 
--- Exercise 2.2
-
 
 -- Solution 2.2
+-- Use a function to filter out the games with combinations equal to 0
+-- Compare the games to determine the order
 attraktiveSpieleVorne :: AngeboteneSpiele -> [Gluecksspiel]
 attraktiveSpieleVorne xs = filter loescheSpiele (sortBy vergleicheSpiele xs)
     where vergleicheSpiele a b 
@@ -52,8 +53,9 @@ type Toepfchen = [Int]
 type Kroepfchen = [Int]
 type Zahlenliste = [Int]
 
-sortiere :: Zahlenliste -> (Toepfchen, Kroepfchen)
-sortiere ns = (gs,ss)
+-- Define local scoped functions for more readability
+aufteilen :: Zahlenliste -> (Toepfchen, Kroepfchen)
+aufteilen ns = (gs,ss)
     where gs = [n | n <- ns, (modSum (sumOnes (baseTransform n)))] 
           ss = [n | n <- ns, (not (modSum (sumOnes (baseTransform n))))]
           sumOnes xs = sum (filter (== 1) xs)
@@ -61,6 +63,8 @@ sortiere ns = (gs,ss)
                 | res `mod` 3 == 0 = True
                 | otherwise = False
 
+-- Helper 2.3
+-- Declare a function to transform numbers into 3-base
 baseTransform :: Int  -> [Int]
 baseTransform n 
     | n == 0 = [0]
@@ -72,53 +76,59 @@ baseTransform n
 type Nat = [Int]
 
 istGueltig :: Nat -> Bool
-istGueltig (n:ns)
+istGueltig (ns)
     | ns == [0] = True
-    | (filter (> 9) ns) == [] = True
+    | (filter (> 9) ns) ++ (filter (< 0) ns) == [] = True
     | otherwise = False 
 
 normalForm :: Nat -> Nat
 normalform (n:[]) = [n]
 normalForm (n:ns)
+    | not (istGueltig (n:ns)) = []
     | n == 0 = normalForm ns
     | otherwise = n:ns 
 
 addiere :: Nat -> Nat -> Nat
-addiere [] bs = []
-addiere as [] = []
-addiere as bs = normalForm (reverseList (sumUp sa sb))
+addiere as bs
+    | not (istGueltig as) || not (istGueltig bs) = []
+    | otherwise = normalForm (reverseList (sumUp sa sb))
     where sa = reverseList (fillZeros as maxLength)
           sb = reverseList (fillZeros bs maxLength)
           maxLength  
             | length as > length bs = length as + 1
             | otherwise = length bs + 1
 
-
-sumUp :: Nat -> Nat -> Nat
-sumUp [] [] = [] 
-sumUp (a:as) (b:bs)
-    | (a + b) > 9 = (a + b - 10) : sumUp (((head as) + 1) : tail as) bs
-    | otherwise = (a + b) : sumUp as bs  
+          sumUp :: Nat -> Nat -> Nat
+          sumUp [] [] = [] 
+          sumUp (a:as) (b:bs)
+                | (a + b) > 9 = (a + b - 10) : sumUp (((head as) + 1) : tail as) bs
+                | otherwise = (a + b) : sumUp as bs  
 
 subtrahiere :: Nat -> Nat -> Nat
 subtrahiere [] bs = []
 subtrahiere as [] = []
 subtrahiere as bs
-            | length bs > length as = [0] 
-            | head bs > head as = [0]
-            | otherwise = normalForm (reverseList (diffDown sa sb))
-                where sa = reverseList (fillZeros as maxLength)
-                      sb = reverseList (fillZeros bs maxLength)
-                      maxLength
-                        | length as > length bs = length as + 1
-                        | otherwise = length bs + 1
+    | not (istGueltig as) || not (istGueltig bs) = []
+    | preCheck as bs = [0] 
+    | otherwise = normalForm (reverseList (diffDown sa sb))
+    where sa = reverseList (fillZeros as maxLength)
+          sb = reverseList (fillZeros bs maxLength)
+          maxLength
+            | length as > length bs = length as + 1
+            | otherwise = length bs + 1
 
-diffDown :: Nat -> Nat -> Nat
-diffDown [] [] = []
-diffDown (a:as) (b:bs)
-    | (a - b) < 0 = (a - b + 10) : diffDown (((head as) - 1) : tail as) bs
-    | otherwise = (a - b) : diffDown as bs  
+          diffDown :: Nat -> Nat -> Nat
+          diffDown [] [] = []
+          diffDown (a:as) (b:bs)
+            | (a - b) < 0 = (a - b + 10) : diffDown (((head as) - 1) : tail as) bs
+            | otherwise = (a - b) : diffDown as bs  
 
+          preCheck :: Nat -> Nat -> Bool
+          preCheck as bs 
+            | length bs > length as = True
+            | length bs == length as && head bs > head as = True
+            | length bs == length as && head bs == head as = preCheck (tail as) (tail bs)
+            | otherwise = False
 
 fillZeros :: Nat -> Int -> Nat
 fillZeros as n
