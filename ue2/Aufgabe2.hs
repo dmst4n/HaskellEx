@@ -26,11 +26,11 @@ p2p (m,n) = (p,q)
 attraktiveSpieleVorne :: AngeboteneSpiele -> [Gluecksspiel]
 attraktiveSpieleVorne xs = filter loescheSpiele (sortBy vergleicheSpiele xs)
     where vergleicheSpiele a b 
-                    | anzahlWettKombis a == anzahlWettKombis b = snd(b) `compare` snd(a)
-                    | otherwise                                = anzahlWettKombis a `compare` anzahlWettKombis b
+                | anzahlWettKombis a == anzahlWettKombis b = (snd(fst(b)) + snd(snd(b))) `compare` (snd(fst(a)) + snd(snd(a)))
+                | otherwise                                = anzahlWettKombis a `compare` anzahlWettKombis b
           loescheSpiele a 
-                    | anzahlWettKombis a == 0 = False
-                    | otherwise               = True
+                | anzahlWettKombis a == 0 = False
+                | otherwise               = True
 
 -- Helper 2.2 from Exercise 1
 anzahlWettKombis    ::  Gluecksspiel -> Nat0
