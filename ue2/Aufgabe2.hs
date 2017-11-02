@@ -66,11 +66,8 @@ aufteilen ns = (gs,ss)
 -- Helper 2.3
 -- Declare a function to transform numbers into 3-base
 baseTransform :: Int  -> [Int]
-baseTransform n 
-    | n == 0 = [0]
-    | n `mod` 3 == 2 = 2 : baseTransform (n `div` 3)
-    | n `mod` 3 == 1 = 1 : baseTransform (n `div` 3)
-    | n `mod` 3 == 0 = 0 : baseTransform (n `div` 3) 
+baseTransform 0 = []
+baseTransform n = baseTransform (n `div` 3) ++ [n `mod`3]
 
 -- Solution 2.4
 type Nat = [Int]
