@@ -82,7 +82,7 @@ normalForm :: Nat -> Nat
 normalform (n:[]) = [n]
 normalForm (n:ns)
     | not (istGueltig (n:ns)) = []
-    | n == 0 = normalForm ns
+    | n == 0 && ns /= [] = normalForm ns
     | otherwise = n:ns 
 
 -- Define local recursive function to sum up the entries
