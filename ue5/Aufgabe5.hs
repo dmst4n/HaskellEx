@@ -49,16 +49,35 @@ einwohner :: Melderegister -> Gemeinde -> [(Name,Geschlecht,Alter)]
 einwohner [] gm = []
 einwohner ((P name alter geschlecht []):mrs) gm = einwohner mrs gm
 einwohner (P name alter geschlecht ((A gemeinde strasse hausnr):wss):mrs) gm 
-	| gm == gemeinde = (name, geschlecht, alter): (einwohner ((P name alter geschlecht wss): (sortL mrs)) gm)
+	| gm == gemeinde = (name, geschlecht, alter): (einwohner ((P name alter geschlecht wss): (sort mrs)) gm)
 	| otherwise = []
 
-sortL :: [Person] -> [Person]
-sortL ps = sort ps
+
+durchschnittsalter_mit_Geschlecht_in :: Melderegister -> Geschlecht -> Gemeinde -> Alter
+durchschnittsalter_mit_Geschlecht_in [] geschlecht gem = 0
+durchschnittsalter_mit_Geschlecht_in mrs geschlecht gem 
+	| sumAnzahl (einwohner mrs gem) geschlecht == 0 = 0
+	| otherwise = quot (sumAlter (einwohner mrs gem) geschlecht) (sumAnzahl (einwohner mrs gem) geschlecht)
+	where 
+		sumAlter :: [(Name, Geschlecht, Alter)] -> Geschlecht -> Alter
+		sumAlter [] gs = 0
+		sumAlter ((name, geschlecht, alter):seq) gs 
+			| gs == geschlecht = alter + sumAlter seq gs
+			| otherwise = sumAlter seq gs
+
+
+		sumAnzahl :: [(Name, Geschlecht, Alter)] -> Geschlecht -> Alter
+		sumAnzahl [] gs = 0
+		sumAnzahl ((name, geschlecht, alter):seq) gs 
+			| gs == geschlecht = 1 + sumAnzahl seq gs
+			| otherwise = sumAnzahl seq gs
+
+
 
 melderegister :: Integer -> Melderegister
 melderegister 1 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"], 
-												alter <- [1..2], 
-												geschlecht <- [X,W,M],
+												alter <- [1..10], 
+												geschlecht <- [X],
 												ws <- [(A gemeinde strasse hausnr) | gemeinde <- ["gma1"],
 																				     strasse <- ["stra"],
 																				     hausnr <- [1]
@@ -73,7 +92,6 @@ melderegister 2 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"],
 																					]:[]
 											]
 {-
-durchschnittsalter_mit_Geschlecht_in :: Melderegister -> Geschlecht -> Gemeinde -> Alter
 ist_wohnhaft :: Melderegister -> Name -> Gemeinde -> Wahrheitswert
 haben_ausschliesslich_als_Wohnsitz :: Melderegister -> Anschrift -> [Person]
 ummelden :: Melderegister -> Von_Anschrift -> Nach_Anschrift -> Melderegister
