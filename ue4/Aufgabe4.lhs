@@ -38,7 +38,7 @@ Solution 4.1
 >	(+) n Null = n
 >	(+) n1 (N n2) = (+) (N n1) n2 
 >	(*) n Null = Null
->	(*) Null n = Null
+>	(*) Null n = NullQQ
 >	(*) n1 (N n2) = iterate (n1 +) n1 !! (fromEnum n2)
 >	(-) n Null = n
 >	(-) Null n = (-) n Null

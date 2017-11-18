@@ -38,6 +38,11 @@ instance Eq Person where
 																		   (alter1 == alter2) && 
 																		   (geschlecht1 == geschlecht2)
 
+instance Eq Anschrift where
+	(A gemeinde1 strasse1 hausnr1) == (A gemeinde2 strasse2 hausnr2) = (gemeinde1 == gemeinde2) && 
+																	   (strasse1 == strasse2) &&
+																	   (hausnr1 == hausnr2)
+
 instance Ord Person where
 	compare (P name1 alter1 geschlecht1 ws1) (P name2 alter2 geschlecht2 ws2)
 		| name1 /= name2 = compare name1 name2
@@ -47,16 +52,18 @@ instance Ord Person where
 
 einwohner :: Melderegister -> Gemeinde -> [(Name,Geschlecht,Alter)]
 einwohner [] gm = []
+einwohner ps "" = []
 einwohner ((P name alter geschlecht []):mrs) gm = einwohner mrs gm
-einwohner (P name alter geschlecht ((A gemeinde strasse hausnr):wss):mrs) gm 
+einwohner ((P name alter geschlecht ((A gemeinde strasse hausnr):wss)):mrs) gm 
 	| gm == gemeinde = (name, geschlecht, alter): (einwohner ((P name alter geschlecht wss): (sort mrs)) gm)
 	| otherwise = []
 
 
 durchschnittsalter_mit_Geschlecht_in :: Melderegister -> Geschlecht -> Gemeinde -> Alter
-durchschnittsalter_mit_Geschlecht_in [] geschlecht gem = 0
+durchschnittsalter_mit_Geschlecht_in [] geschlecht gem = 99999
+durchschnittsalter_mit_Geschlecht_in mrs geschlecht "" = 99999
 durchschnittsalter_mit_Geschlecht_in mrs geschlecht gem 
-	| sumAnzahl (einwohner mrs gem) geschlecht == 0 = 0
+	| sumAnzahl (einwohner mrs gem) geschlecht == 0 = 99999
 	| otherwise = quot (sumAlter (einwohner mrs gem) geschlecht) (sumAnzahl (einwohner mrs gem) geschlecht)
 	where 
 		sumAlter :: [(Name, Geschlecht, Alter)] -> Geschlecht -> Alter
@@ -72,6 +79,22 @@ durchschnittsalter_mit_Geschlecht_in mrs geschlecht gem
 			| gs == geschlecht = 1 + sumAnzahl seq gs
 			| otherwise = sumAnzahl seq gs
 
+
+ist_wohnhaft :: Melderegister -> Name -> Gemeinde -> Wahrheitswert
+ist_wohnhaft [] name gemeinde = False
+ist_wohnhaft ((P name1 alter geschlecht ((A gemeinde1 strasse hausnr):wss)):mrs) name2 gemeinde2 
+	| name1 == name2 && gemeinde1 == gemeinde2 = True
+	| name1 /= name2 || wss == [] = ist_wohnhaft mrs name2 gemeinde2
+	| name1 == name2 = ist_wohnhaft ((P name1 alter geschlecht wss):mrs) name2 gemeinde2
+	| otherwise = False
+
+haben_ausschliesslich_als_Wohnsitz :: Melderegister -> Anschrift -> [Person]
+haben_ausschliesslich_als_Wohnsitz [] an = []
+haben_ausschliesslich_als_Wohnsitz ((P name1 alter geschlecht (an1:wss)):mrs) an2 
+		| an1 == an2 && wss == [] = (P name1 alter geschlecht []) : (haben_ausschliesslich_als_Wohnsitz mrs an2)
+		| an1 == an2 = haben_ausschliesslich_als_Wohnsitz ((P name1 alter geschlecht wss):mrs) an2 
+		| an1 /= an2 = haben_ausschliesslich_als_Wohnsitz mrs an2
+		| otherwise = []
 
 
 melderegister :: Integer -> Melderegister
@@ -92,7 +115,5 @@ melderegister 2 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"],
 																					]:[]
 											]
 {-
-ist_wohnhaft :: Melderegister -> Name -> Gemeinde -> Wahrheitswert
-haben_ausschliesslich_als_Wohnsitz :: Melderegister -> Anschrift -> [Person]
 ummelden :: Melderegister -> Von_Anschrift -> Nach_Anschrift -> Melderegister
 bereinige_Melderegister :: Melderegister -> Melderegister-}
