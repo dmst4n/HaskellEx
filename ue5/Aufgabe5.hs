@@ -1,4 +1,4 @@
-import Data.List (sort)
+import Data.List (sort, sortBy)
 import Data.Ord (comparing)
 
 type Nat1 = Int
@@ -33,15 +33,22 @@ instance Ord Geschlecht where
 	compare X W = LT 
 	compare X M = LT
 
-instance Eq Person where
-	(P name1 alter1 geschlecht1 ws1) == (P name2 alter2 geschlecht2 ws2) = (name1 == name2) && 
-																		   (alter1 == alter2) && 
-																		   (geschlecht1 == geschlecht2)
-
 instance Eq Anschrift where
 	(A gemeinde1 strasse1 hausnr1) == (A gemeinde2 strasse2 hausnr2) = (gemeinde1 == gemeinde2) && 
 																	   (strasse1 == strasse2) &&
 																	   (hausnr1 == hausnr2)
+
+instance Ord Anschrift where
+	compare (A gemeinde1 strasse1 hausnr1) (A gemeinde2 strasse2 hausnr2)
+		| gemeinde1 /= gemeinde2 = compare gemeinde1 gemeinde2
+		| gemeinde1 == gemeinde2 && strasse1 /= strasse2 = compare strasse1 strasse2
+		| otherwise = compare hausnr1 hausnr2
+
+instance Eq Person where
+	(P name1 alter1 geschlecht1 ws1) == (P name2 alter2 geschlecht2 ws2) = (name1 == name2) && 
+																		   (alter1 == alter2) && 
+																		   (geschlecht1 == geschlecht2) &&
+																		   ((sort ws1) == (sort ws2))
 
 instance Ord Person where
 	compare (P name1 alter1 geschlecht1 ws1) (P name2 alter2 geschlecht2 ws2)
@@ -55,8 +62,14 @@ einwohner [] gm = []
 einwohner ps "" = []
 einwohner ((P name alter geschlecht []):mrs) gm = einwohner mrs gm
 einwohner ((P name alter geschlecht ((A gemeinde strasse hausnr):wss)):mrs) gm 
-	| gm == gemeinde = (name, geschlecht, alter): (einwohner ((P name alter geschlecht wss): (sort mrs)) gm)
+	| gm == gemeinde = sortBy sortL ((name, geschlecht, alter): (einwohner mrs gm))
 	| otherwise = []
+	where
+		sortL :: (Name,Geschlecht,Alter) -> (Name,Geschlecht,Alter) -> Ordering
+		sortL (name1, geschlecht1, alter1) (name2, geschlecht2, alter2)
+			| name1 /= name2 = compare name1 name2
+			| name1 == name2 && geschlecht1 /= geschlecht2 = compare geschlecht1 geschlecht2
+			| otherwise = compare alter1 alter2
 
 
 durchschnittsalter_mit_Geschlecht_in :: Melderegister -> Geschlecht -> Gemeinde -> Alter
@@ -91,15 +104,33 @@ ist_wohnhaft ((P name1 alter geschlecht ((A gemeinde1 strasse hausnr):wss)):mrs)
 haben_ausschliesslich_als_Wohnsitz :: Melderegister -> Anschrift -> [Person]
 haben_ausschliesslich_als_Wohnsitz [] an = []
 haben_ausschliesslich_als_Wohnsitz ((P name1 alter geschlecht (an1:wss)):mrs) an2 
-		| an1 == an2 && wss == [] = (P name1 alter geschlecht []) : (haben_ausschliesslich_als_Wohnsitz mrs an2)
-		| an1 == an2 = haben_ausschliesslich_als_Wohnsitz ((P name1 alter geschlecht wss):mrs) an2 
-		| an1 /= an2 = haben_ausschliesslich_als_Wohnsitz mrs an2
-		| otherwise = []
+	| an1 == an2 && wss == [] = (P name1 alter geschlecht []) : (haben_ausschliesslich_als_Wohnsitz mrs an2)
+	| an1 == an2 = haben_ausschliesslich_als_Wohnsitz ((P name1 alter geschlecht wss):mrs) an2 
+	| an1 /= an2 = haben_ausschliesslich_als_Wohnsitz mrs an2
+	| otherwise = []
 
+ummelden :: Melderegister -> Von_Anschrift -> Nach_Anschrift -> Melderegister
+ummelden [] vonAns nachAns = []
+ummelden ((P name1 alter geschlecht wss):mrs) vonAns nachAns = (P name1 alter geschlecht (wssRpl wss vonAns nachAns)) : (ummelden mrs vonAns nachAns)
+	where 
+		wssRpl :: Wohnsitze -> Von_Anschrift -> Nach_Anschrift -> Wohnsitze
+		wssRpl [] vonAns nachAns = []
+		wssRpl (ans:wss) vonAns nachAns 
+			| ans == vonAns = nachAns : (wssRpl wss vonAns nachAns)
+			| otherwise = ans : (wssRpl wss vonAns nachAns)
+
+
+bereinige_Melderegister :: Melderegister -> Melderegister
+bereinige_Melderegister [] = []
+bereinige_Melderegister mrs = rdHelper [] mrs
+    where rdHelper seen [] = seen
+          rdHelper seen (x:xs)
+              | x `elem` seen = rdHelper seen xs
+              | otherwise = rdHelper (seen ++ [x]) xs
 
 melderegister :: Integer -> Melderegister
 melderegister 1 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"], 
-												alter <- [1..10], 
+												alter <- [1], 
 												geschlecht <- [X],
 												ws <- [(A gemeinde strasse hausnr) | gemeinde <- ["gma1"],
 																				     strasse <- ["stra"],
@@ -115,5 +146,4 @@ melderegister 2 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"],
 																					]:[]
 											]
 {-
-ummelden :: Melderegister -> Von_Anschrift -> Nach_Anschrift -> Melderegister
 bereinige_Melderegister :: Melderegister -> Melderegister-}
