@@ -63,6 +63,7 @@ einwohner ps "" = []
 einwohner ((P name alter geschlecht []):mrs) gm = einwohner mrs gm
 einwohner ((P name alter geschlecht ((A gemeinde strasse hausnr):wss)):mrs) gm 
 	| gm == gemeinde = sortBy sortL ((name, geschlecht, alter): (einwohner mrs gm))
+	| gm /= gemeinde && wss /= [] = einwohner ((P name alter geschlecht wss):mrs) gm 
 	| otherwise = []
 	where
 		sortL :: (Name,Geschlecht,Alter) -> (Name,Geschlecht,Alter) -> Ordering
@@ -145,5 +146,6 @@ melderegister 2 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"],
 																				     hausnr <- [1]
 																					]:[]
 											]
-{-
-bereinige_Melderegister :: Melderegister -> Melderegister-}
+
+--####################################################################
+
