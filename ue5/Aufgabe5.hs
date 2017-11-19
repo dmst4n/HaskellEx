@@ -214,6 +214,7 @@ erweitere g
 
 
 
+
 graph1 :: Graph
 graph1 K1 = []
 graph1 K5 = [K1]
@@ -221,6 +222,5 @@ graph1 K2 = [K1]
 graph1 _ = []
 
 {-
-erweitere :: Graph -> U_Graph
 ist_zweifaerbbar :: U_Graph -> Bool
 ist_zweifaerbung :: U_Graph -> Faerbung -> Bool-}
