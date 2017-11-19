@@ -186,6 +186,18 @@ klassifiziere g
 	| (ist_minimal g) = MGG
 	| (istUngerichtet g [(minBound :: Knoten)..]) = UG
 	| otherwise = GG
+	where		
+		istUngerichtet :: Graph -> [Knoten] -> Bool
+		istUngerichtet g [] = True
+		istUngerichtet g (kn:kns)
+			| not (checkEdge g (g kn) kn) = False
+			| otherwise = istUngerichtet g kns
+
+		checkEdge :: Graph -> [Knoten] -> Knoten -> Bool
+		checkEdge g [] kn = True
+		checkEdge g (kn:kns) start 
+			| not (start `elem` (g kn)) = False
+			| otherwise = checkEdge g kns start
 
 
 erweitere :: Graph -> Graph
@@ -199,18 +211,7 @@ erweitere g
 
 		richten :: Graph -> Graph
 		richten g k = (g k) ++ [kn | kn <- [(minBound :: Knoten)..], k `elem` (g kn)]
-	
-istUngerichtet :: Graph -> [Knoten] -> Bool
-istUngerichtet g [] = True
-istUngerichtet g (kn:kns)
-	| not (checkEdge g (g kn) kn) = False
-	| otherwise = istUngerichtet g kns
 
-checkEdge :: Graph -> [Knoten] -> Knoten -> Bool
-checkEdge g [] kn = True
-checkEdge g (kn:kns) start 
-	| not (start `elem` (g kn)) = False
-	| otherwise = checkEdge g kns start
 
 
 graph1 :: Graph
