@@ -1,4 +1,4 @@
-import Data.List (sort, sortBy)
+import Data.List (sort, sortBy, nub)
 import Data.Ord (comparing)
 
 type Nat1 = Int
@@ -138,6 +138,7 @@ melderegister 1 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"],
 																				     hausnr <- [1]
 																					]:[]
 											]
+
 melderegister 2 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"], 
 												alter <- [1..2], 
 												geschlecht <- [X,W,M],
@@ -147,5 +148,78 @@ melderegister 2 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"],
 																					]:[]
 											]
 
---####################################################################
+-- Ex 4.2
+-- Added Enum and Bounded for [(minBound :: Knoten)..]
+-- if not alowed use [K1, K2, K3, K4, K5, K6, K7, K8, K9, K10]
+data Knoten = K1 | K2 | K3 | K4 | K5 | K6 | K7 | K8 | K9 | K10 deriving (Eq, Show, Enum, Bounded)
+type Graph = Knoten -> [Knoten]
+newtype G_Graph = GGr Graph
+newtype U_Graph = UGr Graph
 
+data Klassifikation = GG -- Fuer ‘gerichteter Graph’
+					| UG -- Fuer ‘ungerichteter Graph’
+					| MGG -- Fuer ‘minimaler gerichteter Graph’
+					| MUG -- Fuer ‘minimaler ungerichteter Graph’
+						deriving (Eq,Show)
+data Farbe = Tuerkis | Blau deriving (Eq,Show)
+type Faerbung = Knoten -> Farbe -- Total definiert
+
+
+ist_minimal :: Graph -> Bool
+ist_minimal g = checkG g [(minBound :: Knoten)..]
+	where 
+		checkG :: Graph -> [Knoten] -> Bool
+		checkG g [] = True
+		checkG g (kn:kns)
+			| not (checkK (g kn)) = False
+			| otherwise = checkG g kns
+		checkK :: [Knoten] -> Bool
+		checkK [] = True
+		checkK (kn:kns)
+			| kn `elem` kns = False
+			| otherwise = checkK kns
+
+
+klassifiziere :: Graph -> Klassifikation
+klassifiziere g 
+	| (ist_minimal g) && (istUngerichtet g [(minBound :: Knoten)..]) = MUG
+	| (ist_minimal g) = MGG
+	| (istUngerichtet g [(minBound :: Knoten)..]) = UG
+	| otherwise = GG
+
+
+erweitere :: Graph -> Graph
+erweitere g 
+	| (klassifiziere g) == MUG = g
+	| not (ist_minimal g) = (minimieren g)
+	| otherwise = erweitere (richten g)
+	where
+		minimieren :: Graph -> Graph
+		minimieren g k = nub (g k)
+
+		richten :: Graph -> Graph
+		richten g k = (g k) ++ [kn | kn <- [(minBound :: Knoten)..], k `elem` (g kn)]
+	
+istUngerichtet :: Graph -> [Knoten] -> Bool
+istUngerichtet g [] = True
+istUngerichtet g (kn:kns)
+	| not (checkEdge g (g kn) kn) = False
+	| otherwise = istUngerichtet g kns
+
+checkEdge :: Graph -> [Knoten] -> Knoten -> Bool
+checkEdge g [] kn = True
+checkEdge g (kn:kns) start 
+	| not (start `elem` (g kn)) = False
+	| otherwise = checkEdge g kns start
+
+
+graph1 :: Graph
+graph1 K1 = []
+graph1 K5 = [K1]
+graph1 K2 = [K1]
+graph1 _ = []
+
+{-
+erweitere :: Graph -> U_Graph
+ist_zweifaerbbar :: U_Graph -> Bool
+ist_zweifaerbung :: U_Graph -> Faerbung -> Bool-}
