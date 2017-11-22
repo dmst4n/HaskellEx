@@ -200,10 +200,10 @@ klassifiziere g
 			| otherwise = checkEdge g kns start
 
 
-erweitere :: Graph -> Graph
+erweitere :: Graph -> U_Graph
 erweitere g 
-	| (klassifiziere g) == MUG = g
-	| not (ist_minimal g) = (minimieren g)
+	| (klassifiziere g) == MUG = UGr g
+	| not (ist_minimal g) = UGr (minimieren g)
 	| otherwise = erweitere (richten g)
 	where
 		minimieren :: Graph -> Graph
@@ -212,8 +212,11 @@ erweitere g
 		richten :: Graph -> Graph
 		richten g k = (g k) ++ [kn | kn <- [(minBound :: Knoten)..], k `elem` (g kn)]
 
+ist_zweifaerbbar :: U_Graph -> Bool
+ist_zweifaerbbar g = False
 
-
+ist_zweifaerbung :: U_Graph -> Faerbung -> Bool
+ist_zweifaerbung g f = False 
 
 graph1 :: Graph
 graph1 K1 = []
@@ -221,6 +224,3 @@ graph1 K5 = [K1]
 graph1 K2 = [K1]
 graph1 _ = []
 
-{-
-ist_zweifaerbbar :: U_Graph -> Bool
-ist_zweifaerbung :: U_Graph -> Faerbung -> Bool-}
