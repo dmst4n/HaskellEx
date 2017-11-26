@@ -61,6 +61,12 @@ evaluiere (Fueralle var1 aus) f = (evaluiere aus (f1 f var1)) && (evaluiere aus 
             | var1 == var2 = False
             | otherwise = (f var2)
 
+ist_tautologie :: Ausdruck -> Ausdruck -> Bool
+ist_tautologie aus1 aus2 = evaluiere (Fueralle (Var N1) (Fueralle (Var N2) (Fueralle (Var N3) (Fueralle (Var N4) (Fueralle (Var N5) (Oder (Und aus1 aus2) (Nicht (Und aus1 aus2)))))))) f
+    where 
+        f :: Belegung
+        f _ = True
+
 schreibe :: Ausdruck -> String
 schreibe (K True) = "wahr"
 schreibe (K False) = "falsch"
@@ -71,16 +77,3 @@ schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a
 schreibe (Impl a1 a2) = "(" ++ schreibe a1 ++ " " ++ "=>" ++ " " ++ schreibe a2 ++ ")" 
 schreibe (Esgibt v a) = "(" ++ "EG" ++ " " ++  schreibe (V v) ++ "." ++ " " ++ schreibe a ++")"
 schreibe (Fueralle v a) = "(" ++ "FA" ++ " " ++  schreibe (V v) ++ "." ++ " " ++ schreibe a ++")"
-
-
-
-
-
-
-
-
-schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")" 
-schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")" 
-schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")" 
-schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")"
-schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")"
