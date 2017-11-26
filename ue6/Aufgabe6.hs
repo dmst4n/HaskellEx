@@ -60,3 +60,27 @@ evaluiere (Fueralle var1 aus) f = (evaluiere aus (f1 f var1)) && (evaluiere aus 
         f2 f var1 var2  
             | var1 == var2 = False
             | otherwise = (f var2)
+
+schreibe :: Ausdruck -> String
+schreibe (K True) = "wahr"
+schreibe (K False) = "falsch"
+schreibe (V (Var n)) = show n
+schreibe (Nicht a) = "(" ++ "neg" ++ " " ++ schreibe a ++ " " ++ ")"
+schreibe (Und a1 a2) = "(" ++ schreibe a1 ++ " " ++ "und" ++ " " ++ schreibe a2 ++ ")"
+schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")" 
+schreibe (Impl a1 a2) = "(" ++ schreibe a1 ++ " " ++ "=>" ++ " " ++ schreibe a2 ++ ")" 
+schreibe (Esgibt v a) = "(" ++ "EG" ++ " " ++  schreibe (V v) ++ "." ++ " " ++ schreibe a ++")"
+schreibe (Fueralle v a) = "(" ++ "FA" ++ " " ++  schreibe (V v) ++ "." ++ " " ++ schreibe a ++")"
+
+
+
+
+
+
+
+
+schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")" 
+schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")" 
+schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")" 
+schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")"
+schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")"
