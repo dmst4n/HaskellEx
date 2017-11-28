@@ -1,3 +1,6 @@
+import Data.List (sort, sortBy, nub)
+import Data.Ord (comparing)
+
 --Solution 6.1
 
 type Wahrheitswert = Bool
@@ -71,7 +74,7 @@ schreibe :: Ausdruck -> String
 schreibe (K True) = "wahr"
 schreibe (K False) = "falsch"
 schreibe (V (Var n)) = show n
-schreibe (Nicht a) = "(" ++ "neg" ++ " " ++ schreibe a ++ " " ++ ")"
+schreibe (Nicht a) = "(" ++ "neg" ++ " " ++ schreibe a ++ ")"
 schreibe (Und a1 a2) = "(" ++ schreibe a1 ++ " " ++ "und" ++ " " ++ schreibe a2 ++ ")"
 schreibe (Oder a1 a2) = "(" ++ schreibe a1 ++ " " ++ "oder" ++ " " ++ schreibe a2 ++ ")" 
 schreibe (Impl a1 a2) = "(" ++ schreibe a1 ++ " " ++ "=>" ++ " " ++ schreibe a2 ++ ")" 
@@ -79,11 +82,7 @@ schreibe (Esgibt v a) = "(" ++ "EG" ++ " " ++  schreibe (V v) ++ "." ++ " " ++ s
 schreibe (Fueralle v a) = "(" ++ "FA" ++ " " ++  schreibe (V v) ++ "." ++ " " ++ schreibe a ++")"
 
 -- Exercise 6.2
-import Data.List (sort, sortBy, nub)
-import Data.Ord (comparing)
-
 type Nat1 = Int
-type Wahrheitswert = Bool
 type Name = String
 type Alter = Nat1
 data Geschlecht = M | W | X deriving Show
@@ -93,9 +92,8 @@ type Hausnr = Nat1
 data Person = P Name Alter Geschlecht Wohnsitze deriving Show
 data Anschrift = A Gemeinde Strasse Hausnr deriving Show
 type Wohnsitze = [Anschrift]
-type Von_Anschrift = Anschrift
-type Nach_Anschrift = Anschrift
 type Melderegister = [Person]
+data Registerbaum = Leer | Verzweigung Registerbaum Person Registerbaum deriving (Eq, Show)
 
 instance Eq Geschlecht where
 	M == M = True
@@ -138,69 +136,19 @@ instance Ord Person where
 		| otherwise = compare alter1 alter2
 
 
-einwohner :: Melderegister -> Gemeinde -> [(Name,Geschlecht,Alter)]
-einwohner [] gm = []
-einwohner ps "" = []
-einwohner ((P name alter geschlecht []):mrs) gm = einwohner mrs gm
-einwohner ((P name alter geschlecht ((A gemeinde strasse hausnr):wss)):mrs) gm 
-	| gm == gemeinde = sortBy sortL ((name, geschlecht, alter): (einwohner mrs gm))
-	| gm /= gemeinde && wss /= [] = einwohner ((P name alter geschlecht wss):mrs) gm 
-	| otherwise = []
-	where
-		sortL :: (Name,Geschlecht,Alter) -> (Name,Geschlecht,Alter) -> Ordering
-		sortL (name1, geschlecht1, alter1) (name2, geschlecht2, alter2)
-			| name1 /= name2 = compare name1 name2
-			| name1 == name2 && geschlecht1 /= geschlecht2 = compare geschlecht1 geschlecht2
-			| otherwise = compare alter1 alter2
-
-
-durchschnittsalter_mit_Geschlecht_in :: Melderegister -> Geschlecht -> Gemeinde -> Alter
-durchschnittsalter_mit_Geschlecht_in [] geschlecht gem = 99999
-durchschnittsalter_mit_Geschlecht_in mrs geschlecht "" = 99999
-durchschnittsalter_mit_Geschlecht_in mrs geschlecht gem 
-	| sumAnzahl (einwohner mrs gem) geschlecht == 0 = 99999
-	| otherwise = quot (sumAlter (einwohner mrs gem) geschlecht) (sumAnzahl (einwohner mrs gem) geschlecht)
-	where 
-		sumAlter :: [(Name, Geschlecht, Alter)] -> Geschlecht -> Alter
-		sumAlter [] gs = 0
-		sumAlter ((name, geschlecht, alter):seq) gs 
-			| gs == geschlecht = alter + sumAlter seq gs
-			| otherwise = sumAlter seq gs
-
-
-		sumAnzahl :: [(Name, Geschlecht, Alter)] -> Geschlecht -> Alter
-		sumAnzahl [] gs = 0
-		sumAnzahl ((name, geschlecht, alter):seq) gs 
-			| gs == geschlecht = 1 + sumAnzahl seq gs
-			| otherwise = sumAnzahl seq gs
-
-
-ist_wohnhaft :: Melderegister -> Name -> Gemeinde -> Wahrheitswert
-ist_wohnhaft [] name gemeinde = False
-ist_wohnhaft ((P name1 alter geschlecht ((A gemeinde1 strasse hausnr):wss)):mrs) name2 gemeinde2 
-	| name1 == name2 && gemeinde1 == gemeinde2 = True
-	| name1 /= name2 || wss == [] = ist_wohnhaft mrs name2 gemeinde2
-	| name1 == name2 = ist_wohnhaft ((P name1 alter geschlecht wss):mrs) name2 gemeinde2
-	| otherwise = False
-
-haben_ausschliesslich_als_Wohnsitz :: Melderegister -> Anschrift -> [Person]
-haben_ausschliesslich_als_Wohnsitz [] an = []
-haben_ausschliesslich_als_Wohnsitz ((P name1 alter geschlecht (an1:wss)):mrs) an2 
-	| an1 == an2 && wss == [] = (P name1 alter geschlecht []) : (haben_ausschliesslich_als_Wohnsitz mrs an2)
-	| an1 == an2 = haben_ausschliesslich_als_Wohnsitz ((P name1 alter geschlecht wss):mrs) an2 
-	| an1 /= an2 = haben_ausschliesslich_als_Wohnsitz mrs an2
-	| otherwise = []
-
-ummelden :: Melderegister -> Von_Anschrift -> Nach_Anschrift -> Melderegister
-ummelden [] vonAns nachAns = []
-ummelden ((P name1 alter geschlecht wss):mrs) vonAns nachAns = (P name1 alter geschlecht (wssRpl wss vonAns nachAns)) : (ummelden mrs vonAns nachAns)
-	where 
-		wssRpl :: Wohnsitze -> Von_Anschrift -> Nach_Anschrift -> Wohnsitze
-		wssRpl [] vonAns nachAns = []
-		wssRpl (ans:wss) vonAns nachAns 
-			| ans == vonAns = nachAns : (wssRpl wss vonAns nachAns)
-			| otherwise = ans : (wssRpl wss vonAns nachAns)
-
+migration :: Melderegister -> Registerbaum
+migration [] = Leer
+mirgration (p:ps) = fillBaum (Verzweigung Leer p Leer) ps
+    where
+        fillBaum :: Registerbaum -> Melderegister -> Registerbaum
+        fillBaum baum [] = baum
+        fillBaum Leer (p:ps) = fillBaum (Verzweigung Leer p Leer) ps
+        fillBaum (Verzweigung baum1 (P name alter g ws) baum2) ((P name1 alter1 g1 ws1):ps)
+            | name1 < name && baum1 == Leer = fillBaum (Verzweigung (Verzweigung Leer (P name1 alter1 g1 ws1) Leer) (P name alter g ws) Leer) ps
+            | name1 < name = fillBaum (Verzweigung (fillBaum baum1 ((P name1 alter1 g1 ws1):[])) (P name alter g ws) baum2) ps
+            | name1 > name && baum2 == Leer = fillBaum (Verzweigung Leer (P name alter g ws) (Verzweigung Leer (P name1 alter1 g1 ws1) Leer)) ps 
+            | name1 > name = fillBaum (Verzweigung baum1 (P name alter g ws) (fillBaum baum2 ((P name1 alter1 g1 ws1):[]))) ps
+            | name1 == name && alter1 == alter && g1 == g = fillBaum (Verzweigung baum1 (P name alter g (ws ++ ws1)) baum2) ps
 
 bereinige_Melderegister :: Melderegister -> Melderegister
 bereinige_Melderegister [] = []
