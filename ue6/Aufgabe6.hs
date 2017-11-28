@@ -138,7 +138,7 @@ instance Ord Person where
 
 migration :: Melderegister -> Registerbaum
 migration [] = Leer
-mirgration (p:ps) = fillBaum (Verzweigung Leer p Leer) ps
+migration ps = fillBaum Leer ps
     where
         fillBaum :: Registerbaum -> Melderegister -> Registerbaum
         fillBaum baum [] = baum
@@ -149,18 +149,19 @@ mirgration (p:ps) = fillBaum (Verzweigung Leer p Leer) ps
             | name1 > name && baum2 == Leer = fillBaum (Verzweigung Leer (P name alter g ws) (Verzweigung Leer (P name1 alter1 g1 ws1) Leer)) ps 
             | name1 > name = fillBaum (Verzweigung baum1 (P name alter g ws) (fillBaum baum2 ((P name1 alter1 g1 ws1):[]))) ps
             | name1 == name && alter1 == alter && g1 == g = fillBaum (Verzweigung baum1 (P name alter g (ws ++ ws1)) baum2) ps
+            | otherwise = fillBaum (Verzweigung baum1 (P name alter g ws) baum2) ps
 
-bereinige_Melderegister :: Melderegister -> Melderegister
-bereinige_Melderegister [] = []
-bereinige_Melderegister mrs = rdHelper [] mrs
+bereinige_Anschriften :: Registerbaum -> Registerbaum
+bereinige_Anschriften Leer = Leer
+bereinige_Anschriften (Verzweigung baum1 (P n a g wss) baum2) = (Verzweigung (bereinige_Anschriften baum1) (P n a g (rdHelper [] (sort wss))) (bereinige_Anschriften baum2))
     where rdHelper seen [] = seen
           rdHelper seen (x:xs)
               | x `elem` seen = rdHelper seen xs
               | otherwise = rdHelper (seen ++ [x]) xs
 
 melderegister :: Integer -> Melderegister
-melderegister 1 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"], 
-												alter <- [1], 
+melderegister 1 = [(P name alter geschlecht ws) | name <- ["n5","n2","n3","n5"], 
+												alter <- [1,2], 
 												geschlecht <- [X],
 												ws <- [(A gemeinde strasse hausnr) | gemeinde <- ["gma1"],
 																				     strasse <- ["stra"],
@@ -171,9 +172,9 @@ melderegister 1 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"],
 melderegister 2 = [(P name alter geschlecht ws) | name <- ["n1","n2","n3"], 
 												alter <- [1..2], 
 												geschlecht <- [X,W,M],
-												ws <- [(A gemeinde strasse hausnr) | gemeinde <- ["gma2"],
-																				     strasse <- ["stra"],
-																				     hausnr <- [1]
+												ws <- [(A gemeinde strasse hausnr) | gemeinde <- ["gma2","gma1"],
+																				     strasse <- ["stra","strb"],
+																				     hausnr <- [1,3]
 																					]:[]
 											]
 
