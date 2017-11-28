@@ -159,9 +159,14 @@ bereinige_Anschriften (Verzweigung baum1 (P n a g wss) baum2) = (Verzweigung (be
               | x `elem` seen = rdHelper seen xs
               | otherwise = rdHelper (seen ++ [x]) xs
 
+rolle_rueckwaerts :: Registerbaum -> Melderegister
+rolle_rueckwaerts Leer = []
+rolle_rueckwaerts (Verzweigung Leer p Leer) = [p]
+rolle_rueckwaerts (Verzweigung baum1 p baum2) = (rolle_rueckwaerts baum1) ++ [p] ++ (rolle_rueckwaerts baum2)
+
 melderegister :: Integer -> Melderegister
 melderegister 1 = [(P name alter geschlecht ws) | name <- ["n5","n2","n3","n5"], 
-												alter <- [1,2], 
+												alter <- [1], 
 												geschlecht <- [X],
 												ws <- [(A gemeinde strasse hausnr) | gemeinde <- ["gma1"],
 																				     strasse <- ["stra"],
