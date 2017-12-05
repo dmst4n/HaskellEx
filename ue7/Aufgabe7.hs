@@ -98,5 +98,54 @@ nnf (Und a1 a2) = Und (nnf a1) (nnf a2)
 nnf (Oder a1 a2) = Oder (nnf a1) (nnf a2)
 nnf (Impl a1 a2) = Impl (nnf a1) (nnf a2)
 nnf (Esgibt v a) = (Esgibt v (nnf a))
-nnf (Fueralle v a) = (Esgibt v (nnf a)) 
+nnf (Fueralle v a) = (Fueralle v (nnf a)) 
 
+
+type Nat0 = Int
+type Nat1 = Int
+type Anzahl_Blutkonserven = Nat0
+type Reiseproviant = Anzahl_Blutkonserven
+type Reisedauer = Nat1 -- In vollen Std., ausschliesslich Werte von 1..12
+type Abfahrtszeit = Nat0 -- In vollen Std., ausschliesslich Werte von 0..23
+type Ankunftszeit = Nat0 -- In vollen Std., ausschliesslich Werte von 0..23
+data Stadt = S1 | S2 | S3 | S4 | S5 | S6 | S7 | S8 | S9 | S10 deriving Show
+type Ausgangsort = Stadt
+type Zielort = Stadt
+type Abfahrtsort = Stadt
+type Ankunftsort = Stadt
+type Relation = (Abfahrtsort,Abfahrtszeit,Ankunftsort,Ankunftszeit)
+type Reiseplan = [Relation]
+type Fahrplan = Abfahrtsort -> [(Ankunftsort,Abfahrtszeit,Reisedauer)] -- Total def.
+
+instance Eq Stadt where
+    S1 == S1 = True
+    S2 == S2 = True
+    S3 == S3 = True
+    S4 == S4 = True
+    S5 == S5 = True
+    S6 == S6 = True
+    S7 == S7 = True
+    S8 == S8 = True
+    S9 == S9 = True
+    S10 == S10 = True
+
+reise_planer :: Fahrplan -> Ausgangsort -> Zielort -> Maybe Reiseplan
+reise_planer fp aus ziel = calcRout fp aus (fp aus) ziel aus []
+    where 
+        calcRout :: Fahrplan -> Abfahrtsort -> [(Ankunftsort,Abfahrtszeit,Reisedauer)] -> Ausgangsort -> Zielort -> Reiseplan -> Maybe Reiseplan
+        calcRout fp abo [] auso zielo rp 
+            | abo == auso = Nothing
+            | otherwise = Just [] 
+        calcRout fp abo ((ano, anzeit, rd):fps) auso zielo rp
+            | ano == zielo = Just (rp ++ [(abo, anzeit, ano, (mod24 anzeit rd))]) 
+         --   | (anzeit < 7) || (anzeit > 17) = calcRout fp ano fps auso zielo (rp ++ [(abo, anzeit, ano, (mod24 anzeit rd))])
+            | otherwise = calcRout fp abo fps auso zielo rp
+            
+
+        mod24 :: Ankunftszeit -> Reisedauer -> Ankunftszeit
+        mod24 an rd = ((an + rd) `mod` 24)
+
+
+fahrplan :: Fahrplan
+fahrplan S1 = [(S3, 19, 2),(S5, 23, 3)]
+fahrplan _ = []
