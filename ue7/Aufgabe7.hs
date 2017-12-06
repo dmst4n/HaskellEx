@@ -128,22 +128,8 @@ instance Eq Stadt where
     S8 == S8 = True
     S9 == S9 = True
     S10 == S10 = True
+    _ == _ = False
 
-reise_planer :: Fahrplan -> Ausgangsort -> Zielort -> Maybe Reiseplan
-reise_planer fp aus ziel = calcRout fp aus (fp aus) ziel aus []
-    where 
-        calcRout :: Fahrplan -> Abfahrtsort -> [(Ankunftsort,Abfahrtszeit,Reisedauer)] -> Ausgangsort -> Zielort -> Reiseplan -> Maybe Reiseplan
-        calcRout fp abo [] auso zielo rp 
-            | abo == auso = Nothing
-            | otherwise = Just [] 
-        calcRout fp abo ((ano, anzeit, rd):fps) auso zielo rp
-            | ano == zielo = Just (rp ++ [(abo, anzeit, ano, (mod24 anzeit rd))]) 
-         --   | (anzeit < 7) || (anzeit > 17) = calcRout fp ano fps auso zielo (rp ++ [(abo, anzeit, ano, (mod24 anzeit rd))])
-            | otherwise = calcRout fp abo fps auso zielo rp
-            
-
-        mod24 :: Ankunftszeit -> Reisedauer -> Ankunftszeit
-        mod24 an rd = ((an + rd) `mod` 24)
 
 
 fahrplan :: Fahrplan
