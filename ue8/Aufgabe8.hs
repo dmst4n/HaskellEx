@@ -56,10 +56,10 @@ checkColumn (ht1:ht2:bp) zbr s
 	| (ht2 <= ht1) = checkColumn (ht1:bp) zbr s
 
 isUnfinished :: Bauplan -> Bool
-isUnfinished [] = True
+isUnfinished [] = False
 isUnfinished (z1:bp) 
-	| H00 `elem` z1 = isUnfinished bp
-	| otherwise = False
+	| H00 `elem` z1 = True
+	| otherwise = isUnfinished bp
 
 toBauplan :: Baufeldgroesse -> Baufeld -> Bauplan
 toBauplan bfg bf = [map (bf x) (take (zti bfg) [R1 :: Reihe .. R10 :: Reihe]) | x <- (take (zti bfg) [Z1 :: Zeile .. Z10 :: Zeile])]
@@ -122,6 +122,23 @@ za _ WO  = II
 bf :: Int -> [Haustyp]
 bf 1 = [H10, H20, H50, H40, H50]
 
+testauflage :: Baufeldauflage
+testzeilenauflage :: Zeilenauflage
+testreihenauflage :: Reihenauflage
+testauflage = (testzeilenauflage,testreihenauflage)
+testzeilenauflage Z1 WO = III
+testzeilenauflage Z2 WO = II
+testzeilenauflage Z3 WO = II
+testzeilenauflage Z1 OW = I
+testzeilenauflage Z2 OW = II
+testzeilenauflage Z3 OW = II
+testreihenauflage R1 NS = I
+testreihenauflage R1 SN = I
+testreihenauflage R2 NS = III
+testreihenauflage R2 SN = I
+testreihenauflage R3 NS = I
+testreihenauflage R3 SN = II
+
 testfeld :: Baufeld
 testfeld Z1 R1 = H10
 testfeld Z1 R2 = H20
@@ -130,5 +147,5 @@ testfeld Z2 R1 = H10
 testfeld Z2 R2 = H30
 testfeld Z2 R3 = H20
 testfeld Z3 R1 = H10
-testfeld Z3 R2 = H30
+testfeld Z3 R2 = H50
 testfeld Z3 R3 = H20
