@@ -40,6 +40,7 @@ checkRow (ht1:ht2:bp) zbr s
 	| zbr == OW = checkRow (reverse (ht1:ht2:bp)) WO s
 	| (ht2 > ht1) = checkRow (ht2:bp) zbr (s - 1)
 	| (ht2 <= ht1) = checkRow (ht1:bp) zbr s
+	| otherwise = False
 
 conformColumns :: Bauplan -> Baufeldauflage -> Reihe -> Bool
 conformColumns (hts:bp) (za, ra) z
@@ -54,12 +55,37 @@ checkColumn (ht1:ht2:bp) zbr s
 	| zbr == SN = checkColumn (reverse (ht1:ht2:bp)) NS s
 	| (ht2 > ht1) = checkColumn (ht2:bp) zbr (s - 1)
 	| (ht2 <= ht1) = checkColumn (ht1:bp) zbr s
+	| otherwise = False
 
 isUnfinished :: Bauplan -> Bool
 isUnfinished [] = False
 isUnfinished (z1:bp) 
 	| H00 `elem` z1 = True
 	| otherwise = isUnfinished bp
+
+
+-- Second part
+
+berechne_bauplan :: Baufeldgroesse -> Baufeld -> Baufeldauflage -> Bauplanung
+berechne_bauplan bfg bf (za, ra)
+	| (checkSkandal bfg (za, ra) Z1 R1) == False = Bauamtsauflagenskandal
+	| otherwise = BP $ toBauplan bfg bf
+
+checkSkandal :: Baufeldgroesse -> Baufeldauflage -> Zeile -> Reihe -> Bool
+checkSkandal bfg (za, ra) z r 
+	| bfg == (colToZahl r) = (checkZA bfg z za) && (checkRA bfg r ra)
+	| (checkZA bfg z za) && (checkRA bfg r ra) = checkSkandal bfg (za, ra) (incZ z) (incR r)
+	| otherwise = False
+
+
+checkZA :: Baufeldgroesse -> Zeile -> Zeilenauflage -> Bool
+checkZA bfg z za = ((zti (za z WO)) + (zti (za z OW))) <= ((zti bfg) + 1)
+
+
+checkRA :: Baufeldgroesse -> Reihe -> Reihenauflage -> Bool
+checkRA bfg z za = (zti (za z NS) + zti (za z SN)) <= ((zti bfg) + 1)
+
+-- Helper
 
 toBauplan :: Baufeldgroesse -> Baufeld -> Bauplan
 toBauplan bfg bf = [map (bf x) (take (zti bfg) [R1 :: Reihe .. R10 :: Reihe]) | x <- (take (zti bfg) [Z1 :: Zeile .. Z10 :: Zeile])]
@@ -115,6 +141,9 @@ itz 8 = VIII
 itz 9 = IX
 itz 10 = X
 
+colToZahl :: Reihe -> Zahl
+colToZahl r = itz $ length $ [R1 :: Reihe .. r]
+
 za :: Zeilenauflage
 za Z1 WO = V
 za _ WO  = II
@@ -126,7 +155,7 @@ testauflage :: Baufeldauflage
 testzeilenauflage :: Zeilenauflage
 testreihenauflage :: Reihenauflage
 testauflage = (testzeilenauflage,testreihenauflage)
-testzeilenauflage Z1 WO = III
+testzeilenauflage Z1 WO = IV
 testzeilenauflage Z2 WO = II
 testzeilenauflage Z3 WO = II
 testzeilenauflage Z1 OW = I
